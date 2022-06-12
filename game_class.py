@@ -29,8 +29,9 @@ class Game:
         '''self.input.data = list. Each row in layout corresponds to a player in the list.
         Map champion ID to .png file in /champions | map spell1 ID to .png in spells | map spell2 ID to .png in spells
         '''
+        sg.theme('DarkBlack')
         layout = [
-            [sg.Input(key='gameTimeInputMin', size=(4, 1),default_text='00'), sg.Input(key='gameTimeInputSec', size=(4, 1),default_text='00'), sg.Button('Sync', key='gameTimeButton'), sg.Text('', key='syncdone', size=(9,1), background_color='black')],
+            [sg.Input(key='gameTimeInputMin', size=(4, 1),default_text='00'), sg.Input(key='gameTimeInputSec', size=(4, 1),default_text='00'), sg.Button('Sync', key='gameTimeButton'), sg.Text('', key='current_time', size=(9,1))],# background_color='black')],
             [sg.Button(image_filename=f"champions/{self.input.data[0]['champion']}.png"), sg.Button(image_filename=f"spells/{self.input.data[0]['spell1']}.png", key='00'), sg.Button(image_filename=f"spells/{self.input.data[0]['spell2']}.png", key='01'), sg.Checkbox('Luci', key='000')],
             [sg.Button(image_filename=f"champions/{self.input.data[1]['champion']}.png"), sg.Button(image_filename=f"spells/{self.input.data[1]['spell1']}.png", key='10'), sg.Button(image_filename=f"spells/{self.input.data[1]['spell2']}.png", key='11'), sg.Checkbox('Luci', key='100')],
             [sg.Button(image_filename=f"champions/{self.input.data[2]['champion']}.png"), sg.Button(image_filename=f"spells/{self.input.data[2]['spell1']}.png", key='20'), sg.Button(image_filename=f"spells/{self.input.data[2]['spell2']}.png", key='21'), sg.Checkbox('Luci', key='200')],
@@ -132,13 +133,15 @@ class Game:
                 timer_string = self.build_overlay_string()
                 window_overlay['OverlayText'].update(timer_string)
 
-            # Update timers every 3 seconds, to remove outdated ones. The logic is to add a delay, as constant updates aren't necessary.
+            # Update timers every second, to remove outdated ones and update the clock on main input UI. 
             current_time = int(time.time())
-            if current_time - loop_timer == 3:
+            if current_time - loop_timer == 1:
                 self.cull_outdated_timers()
                 timer_string = self.build_overlay_string()
                 window_overlay['OverlayText'].update(timer_string)
+                window_main['current_time'].update(self.convert_sec_to_mins(current_time - self.gamestart))
                 loop_timer = current_time
+
 
             # Reset timers completely.
             if event == 'Clear All':
@@ -161,7 +164,7 @@ class Game:
                     secs = '00'
                 timeInSeconds = (int(mins) * 60) + int(secs)   
                 self.gamestart = int(time.time()) - timeInSeconds
-                window_main['syncdone'].update('Synced')
+                window_main['current_time'].update(self.convert_sec_to_mins(current_time - self.gamestart))
 
         window.close()
 

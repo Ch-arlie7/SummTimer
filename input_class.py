@@ -10,13 +10,16 @@ class Input:
             f = json.load(f)
         self.name = f['name']
         self.api_key = f['api_key']
+        self.region = f['region']
         self.data, self.gamestart = self.get_game_data()
 
     def create_window(self):
-        sg.theme('BluePurple')
+        sg.theme('DarkBlack')
+        region_list = ['BR1', 'EUN1', 'EUW1', 'JP1', 'KR', 'LA1', 'LA2', 'NA1', 'OC1', 'RU', 'TR1']
         layout = [[sg.Text('', key='errormsg', size=(15,1))],
               [sg.Text('API Key', size=(15, 1)), sg.InputText(key='apikey', default_text=self.api_key)],
               [sg.Text('IGN', size=(15, 1)), sg.InputText(key='ign', default_text=self.name)],
+              [sg.Text('Region', size=(15,1)), sg.Combo(region_list, s=(7,11), default_value=self.region, key='region')],
               [sg.Button('Submit'), sg.Button('Cancel'), sg.Button('Get API Key')]
              ]
         return sg.Window('Input', layout)
@@ -34,7 +37,8 @@ class Input:
                 try:
                     lol_watcher = LolWatcher(values['apikey'])
                     summonername = values['ign']
-                    summonerId = lol_watcher.summoner.by_name('euw1', summonername)['id']
+                    region = values['region']
+                    summonerId = lol_watcher.summoner.by_name(region, summonername)['id']
                 except ApiError as err:
                     if err.response.status_code == 404:
                         window['errormsg'].update('Invalid IGN')
@@ -44,9 +48,9 @@ class Input:
                         continue
                     else:
                         raise
-                self.update_config(values['ign'], values['apikey'])
+                self.update_config(values['ign'], values['apikey'], values['region'])
                 try:
-                    spectate_data = lol_watcher.spectator.by_summoner('euw1', summonerId)
+                    spectate_data = lol_watcher.spectator.by_summoner(region, summonerId)
                     break
                 except ApiError as err:
                     if err.response.status_code == 404:
@@ -82,12 +86,14 @@ class Input:
         gamestart = int(spectator['gameStartTime'] / 1000)
         return players, gamestart
 
-    def update_config(self, name: str, api_key: str):
+    def update_config(self, name: str, api_key: str, region: str):
         self.name = name
         self.api_key = api_key
+        self.region = region
         with open('config.json', 'w') as f:
             json.dump({'name' : self.name,
-                        'api_key' : self.api_key},
+                        'api_key' : self.api_key,
+                        'region' : self.region},
                         f)
 
 

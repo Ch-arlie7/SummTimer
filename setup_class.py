@@ -15,8 +15,11 @@ class Setup:
         
     def create_config_file(self):
         if not exists('config.json'):
-            cfg = {'name' : '',
-                'api_key' : ''}
+            cfg = {
+                'name' : '',
+                'api_key' : '',
+                'region' : ''
+                }
             with open('config.json', 'w') as f:
                 json.dump(cfg, f)
 
