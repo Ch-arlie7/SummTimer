@@ -64,7 +64,7 @@ class Setup:
             if exists(f'spells/{spell_id}.png'):
                 continue
             try:
-                url = base_url + self.spell_icon_url_dict[spell_id]
+                url = base_url + self.data['spell_id_to_icon_url_dict'][spell_id]
                 image = requests.get(url).content
                 with open(f'spells/{spell_id}.png', 'wb') as f:
                     f.write(image)
